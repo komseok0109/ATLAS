@@ -1,0 +1,21 @@
+# conda env `atlas`: ATLAS and MAABench human-text reconstruction.
+# Python 3.11, cu128 torch build. The exact working freeze is env/freeze-atlas.txt.
+#
+#   conda create -y -n atlas python=3.11
+#   conda activate atlas
+#   pip install -r requirements.txt
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch==2.11.0
+transformers==5.12.1
+peft==0.19.1
+trl==1.7.0
+datasets==5.0.0
+accelerate==1.14.0
+safetensors
+sentencepiece
+numpy
+scipy
+scikit-learn
+wandb
+tqdm
+
