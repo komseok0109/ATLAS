@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Who's Behind the Text? Robust Model Authorship Attribution</title>
+<meta name="description" content="ATLAS attributes a text to its source LLM family through source-conditioned likelihoods, and MAABench evaluates attribution under domain and version shift.">
+<link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+<progress id="progress" value="0" max="1"></progress>
+
+<header class="article">
+  <div class="d-title">
+    <h1>Who's Behind the Text? Robust Model Authorship Attribution</h1>
+    <p>ATLAS identifies which model family wrote a text by comparing source-conditioned likelihoods, and stays reliable when the domain or the model version changes.</p>
+  </div>
+  <div class="d-byline">
+    <div>
+      <h3>Authors</h3>
+      <div class="authors">
+        <span>Minseok Ko<sup>1</sup></span>
+        <span>Kunwoong Kim<sup>1</sup></span>
+        <span>Hyunseok Lee<sup>1</sup></span>
+        <span>Woomin Song<sup>1</sup></span>
+        <span>Beomjun Kim<sup>1</sup></span>
+        <span>Jinwoo Shin<sup>1</sup></span>
+      </div>
+    </div>
+    <div>
+      <h3>Affiliations</h3>
+      <div><sup>1</sup>KAIST</div>
+    </div>
+  </div>
+  <div class="paper-links">
+    <!-- TODO: replace with the arXiv abs URL (https://arxiv.org/abs/XXXX.XXXXX) -->
+    <a class="link-btn" href="#">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-1 7V3.5L18.5 9z"/></svg>
+      Paper
+    </a>
+    <a class="link-btn" href="https://github.com/komseok0109/ATLAS" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.4-5.27 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+      Code
+    </a>
+    <a class="link-btn" href="https://huggingface.co/datasets/ming9999/maabench" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C7 2 3 3.8 3 6v12c0 2.2 4 4 9 4s9-1.8 9-4V6c0-2.2-4-4-9-4zm0 2c4.4 0 7 1.5 7 2s-2.6 2-7 2-7-1.5-7-2 2.6-2 7-2zM5 8.7C6.7 9.5 9.2 10 12 10s5.3-.5 7-1.3V12c0 .5-2.6 2-7 2s-7-1.5-7-2zm0 6c1.7.8 4.2 1.3 7 1.3s5.3-.5 7-1.3V18c0 .5-2.6 2-7 2s-7-1.5-7-2z"/></svg>
+      MAABench Data
+    </a>
+  </div>
+</header>
+
+<main>
+  <div class="article">
+    <figure>
+      <img src="static/figures/overview.svg" alt="Overview of ATLAS: per-family source conditions on a shared LLM, trained with likelihood, and attribution from clipped token-level likelihoods">
+    </figure>
+  </div>
+  <div class="article">
+    <p class="table-note" style="margin-top:-14px">Rather than directly predicting the source, ATLAS learns a source-conditioned language model for each model family on a frozen LLM and attributes a text by comparing its token-level likelihoods under every source condition.</p>
+
+    <div class="insights">
+      <div class="insights-title">&#10022; Highlights</div>
+      <div class="insight">
+        <div class="num">1</div>
+        <div class="body"><strong>Attribution as likelihood, not classification.</strong> ATLAS learns how each family generates text, with a prefix embedding and a source-specific LoRA up-projection on a frozen LLM, and decides by comparing clipped token-level likelihoods so that a few extreme tokens cannot dominate.</div>
+      </div>
+      <div class="insight">
+        <div class="num">2</div>
+        <div class="body"><strong>Robust under domain and version shift.</strong> On MAABench, ATLAS outperforms the strongest baseline by 12.32pp under Version shift and 9.00pp under Joint shift, and reaches 95.71% OOD accuracy on OpenTuringBench, 33.52pp above the best baseline.</div>
+      </div>
+      <div class="insight">
+        <div class="num">3</div>
+        <div class="body"><strong>Beyond attribution: tracing teachers.</strong> ATLAS recovers the stated teacher of every distilled model we evaluate and characterizes which family recently deployed models most resemble.</div>
+      </div>
+    </div>
+
+    <h2 id="abstract">Abstract</h2>
+    <p>
+      As large language models (LLMs) are increasingly used to generate text, their misuse has become a growing societal problem, with serious implications for academic misconduct, model distillation, and cyberattacks.
+      For these reasons, Model Authorship Attribution (MAA), which identifies the source model of a given text, is important for promoting the responsible use of LLMs and improving AI safety.
+      In practice, attribution systems must remain reliable beyond the distributions observed during training. They may encounter texts from unseen domains and writing settings, as well as generations from future versions of model families that were not available when the system was trained.
+      However, existing MAA methods often exhibit substantial performance degradation under such distribution shifts.
+      To address this challenge, we propose <b>A</b>uthorship <b>T</b>racing via <b>L</b>ikelihood-based <b>A</b>ttribution of <b>S</b>ources (ATLAS),
+      which formulates MAA through source-conditioned text modeling rather than direct source prediction. ATLAS learns how text from each source family is generated and attributes a given text by comparing its likelihood under each learned source condition. We aggregate this likelihood evidence at the token level with clipping so that no single token dominates the decision.
+      We further introduce MAABench, a novel and broad MAA benchmark that can evaluate more practical OOD settings such as domain and version.
+      Our experiments show that ATLAS consistently outperforms existing baselines across MAABench and OpenTuringBench.
+      In particular, when both the generation domain and the model version change on MAABench, ATLAS achieves 74.27% accuracy, 9.00pp higher than the strongest baseline.
+      Beyond MAA, ATLAS can also help identify distillation source models by measuring which source model a target LLM most closely resembles.
+      Our extended experiments support this claim by showing that ATLAS recovers the known teacher of every distilled model we evaluate.
+    </p>
+
+    <h2 id="method">Method: ATLAS</h2>
+    <ul>
+        <li><b>Source-conditioned likelihood, not a classifier.</b> For each model family, ATLAS learns a source condition on a frozen pretrained LLM (a prefix embedding <i>e<sub>k</sub></i> and a source-specific LoRA up-projection <i>B<sub>k</sub></i>, with a shared down-projection <i>A</i>), trained only to maximize the likelihood of that family's texts.</li>
+        <li><b>Token-level clipped attribution.</b> At inference, ATLAS scores a text under every source condition, compares the sources token by token, and clips each token's relative evidence so that a few extreme tokens cannot decide the attribution.</li>
+      </ul>
+
+    <h2 id="benchmark">MAABench</h2>
+    <p>A benchmark for attribution under distribution shift in both the generation domain and the source-model version.</p>
+    <div class="highlight">
+      <div class="stat"><div class="num">5</div><div class="lbl">model families<br>GPT · Claude · Gemini · Mistral · Llama</div></div>
+      <div class="stat"><div class="num">4</div><div class="lbl">versions per family<br>1 for training, 3 held out</div></div>
+      <div class="stat"><div class="num">6</div><div class="lbl">domains<br>4 for training, 2 held out</div></div>
+    </div>
+    <p>All five families receive the same prompts, built from the metadata of human-written seed texts in News, Wikipedia, Academic Writing, Product Review, Patent, and Stack Exchange.</p>
+    <div class="remark-box">
+      <p>Besides the in-distribution (ID) test, MAABench evaluates three OOD settings:
+      <b>Domain shift</b> (held-out domains with a different system prompt),
+      <b>Version shift</b> (three newer versions of each family), and
+      <b>Joint shift</b> (both at once).</p>
+    </div>
+    <div class="results-table narrow-table">
+      <table>
+        <thead>
+          <tr><th>Distribution</th><th>Split</th><th>Setting</th><th>MGT</th><th>Human</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>ID</td><td>Train</td><td>–</td><td>149,760</td><td>29,952</td></tr>
+          <tr><td></td><td>Val</td><td>–</td><td>9,990</td><td>1,998</td></tr>
+          <tr><td></td><td>Test</td><td>–</td><td>9,985</td><td>1,997</td></tr>
+          <tr><td>OOD</td><td>Test</td><td>Domain</td><td>7,470</td><td>1,494</td></tr>
+          <tr><td></td><td></td><td>Version</td><td>29,700</td><td>1,980<sup>†</sup></td></tr>
+          <tr><td></td><td></td><td>Joint</td><td>21,615</td><td>1,441<sup>†</sup></td></tr>
+          <tr class="ours"><td colspan="3">Total</td><td>228,520</td><td>35,443</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note"><b>Summary of MAABench.</b> <sup>†</sup>Reused human texts; the total counts each text once.</p>
+
+    <h2 id="results">Results</h2>
+
+    <h3>Attribution on MAABench</h3>
+    <div class="results-table">
+      <table>
+        <thead>
+          <tr><th rowspan="2">Method</th><th colspan="2">ID</th><th colspan="2">Domain</th><th colspan="2">Version</th><th colspan="2">Joint</th></tr>
+          <tr class="subhead"><th>Acc</th><th>F1</th><th>Acc</th><th>F1</th><th>Acc</th><th>F1</th><th>Acc</th><th>F1</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="group" colspan="9">Fixed-feature baselines</td></tr>
+          <tr><td>Fast-DetectGPT</td><td>44.37</td><td>43.54</td><td>45.29</td><td>44.18</td><td>35.22</td><td>34.75</td><td>31.85</td><td>30.81</td></tr>
+          <tr><td>Binoculars</td><td>45.61</td><td>44.81</td><td>46.53</td><td>45.70</td><td>36.09</td><td>35.30</td><td>32.56</td><td>31.17</td></tr>
+          <tr><td>GPT-who</td><td>58.63</td><td>58.29</td><td>55.29</td><td>56.17</td><td>41.71</td><td>40.34</td><td>39.94</td><td>38.43</td></tr>
+          <tr><td>Sniffer</td><td>76.00</td><td>75.83</td><td>64.51</td><td>64.89</td><td>51.97</td><td>50.72</td><td>47.57</td><td>45.85</td></tr>
+          <tr><td>StatEnsemble</td><td>74.36</td><td>74.11</td><td>58.07</td><td>58.52</td><td>38.86</td><td>38.77</td><td>32.29</td><td>32.35</td></tr>
+          <tr><td class="group" colspan="9">Encoder-tuning baselines</td></tr>
+          <tr><td>DeTeCtive</td><td>99.51</td><td>99.51</td><td>94.69</td><td>94.72</td><td>70.60</td><td>70.21</td><td>63.32</td><td>62.63</td></tr>
+          <tr><td>OTBDetector</td><td>99.50</td><td>99.50</td><td>94.89</td><td>94.89</td><td>70.20</td><td>69.73</td><td>63.48</td><td>62.54</td></tr>
+          <tr><td>DA-MTL</td><td>99.58</td><td>99.58</td><td>95.31</td><td>95.31</td><td>71.08</td><td>70.78</td><td>64.99</td><td>64.02</td></tr>
+          <tr><td>Idiosyncrasies</td><td>99.56</td><td>99.56</td><td>95.04</td><td>95.05</td><td>71.98</td><td>71.61</td><td>65.27</td><td>64.11</td></tr>
+          <tr class="ours"><td>ATLAS (ours)</td><td>99.72</td><td>99.72</td><td>97.97</td><td>97.97</td><td>84.30</td><td>84.27</td><td>74.27</td><td>73.99</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note"><b>MAA performance on MAABench</b> (accuracy and macro-F1, %). ID is nearly saturated, but under OOD evaluation ATLAS outperforms the strongest baseline by 2.66pp, 12.32pp, and 9.00pp on Domain, Version, and Joint shift. ATLAS and the four encoder-tuning baselines are averaged over three seeds.</p>
+
+    <h3>Attribution on OpenTuringBench</h3>
+    <div class="results-table">
+      <table>
+        <thead>
+          <tr><th rowspan="2">Method</th><th colspan="5">ID</th><th rowspan="2">OOD</th></tr>
+          <tr class="subhead"><th>ID</th><th>E1</th><th>E2</th><th>E3</th><th>E4</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="group" colspan="7">Fixed-feature baselines</td></tr>
+          <tr><td>Fast-DetectGPT</td><td>18.93</td><td>19.49</td><td>17.57</td><td>21.68</td><td>15.37</td><td>19.92</td></tr>
+          <tr><td>Binoculars</td><td>19.54</td><td>22.91</td><td>20.33</td><td>24.79</td><td>16.41</td><td>23.15</td></tr>
+          <tr><td>GPT-who</td><td>47.55</td><td>22.41</td><td>44.68</td><td>31.09</td><td>15.05</td><td>25.89</td></tr>
+          <tr><td>Sniffer</td><td>61.65</td><td>27.25</td><td>55.78</td><td>38.67</td><td>15.53</td><td>30.12</td></tr>
+          <tr><td>StatEnsemble</td><td>61.93</td><td>60.52</td><td>58.40</td><td>63.30</td><td>26.99</td><td>48.46</td></tr>
+          <tr><td class="group" colspan="7">Encoder-tuning baselines</td></tr>
+          <tr><td>DeTeCtive</td><td>99.83</td><td>84.43</td><td>99.36</td><td>89.00</td><td>27.48</td><td>56.61</td></tr>
+          <tr><td>OTBDetector</td><td>99.76</td><td>84.41</td><td>99.11</td><td>88.03</td><td>30.89</td><td>47.92</td></tr>
+          <tr><td>DA-MTL</td><td class="best">99.87</td><td>83.79</td><td>99.48</td><td>95.99</td><td>32.36</td><td>62.19</td></tr>
+          <tr><td>Idiosyncrasies</td><td>89.90</td><td>70.16</td><td>86.56</td><td>79.52</td><td>28.64</td><td>41.11</td></tr>
+          <tr class="ours"><td>ATLAS (ours)</td><td class="notbest">99.80</td><td>89.71</td><td>99.70</td><td>98.79</td><td>41.92</td><td>95.71</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note"><b>MAA performance on OpenTuringBench</b> (accuracy, %). ATLAS reaches 95.71% on OOD, 33.52pp above the best baseline, and is best on all four in-domain variations (E1–E4).</p>
+
+    <h3>Backbone size and data efficiency</h3>
+  </div>
+  <div class="wide">
+    <div class="pair">
+      <figure>
+        <img src="static/figures/backbone_scale.svg" alt="ATLAS accuracy versus Qwen2.5 backbone size">
+        <div class="sub">(a) Backbone size</div>
+      </figure>
+      <figure>
+        <img src="static/figures/data_scale.svg" alt="Accuracy of ATLAS and DA-MTL versus training data size on Version and Joint shift">
+        <div class="sub">(b) Training data size</div>
+      </figure>
+    </div>
+  </div>
+  <div class="article">
+    <p class="table-note">(a) Larger backbones help most under OOD evaluation. (b) With only 1,000 texts per family, ATLAS already outperforms DA-MTL trained on the full split on Version and Joint shift.</p>
+
+    <h2 id="distillation">Beyond Attribution: Distilled and Deployed Models</h2>
+    <h3>Distilled models with known teachers</h3>
+    <p>
+        A student trained on the outputs of a teacher may retain the teacher's generation patterns.
+        We train ATLAS as a three-class attributor over GPT, Claude, and Gemini and apply it to six publicly released distilled models whose teachers are stated in their model cards, two students per teacher built on different base models.
+    </p>
+    <figure>
+      <img style="max-width:520px" src="static/figures/distill_known.svg" alt="Share of each distilled model's texts attributed to GPT, Claude, and Gemini, with the rejection share, for six distilled models and two comparison models">
+      <figcaption><b>Distilled models with known teachers.</b> Share of each model's texts attributed to each family (%). ATLAS attributes all six distilled models to their stated teachers, with shares from 63.3% to 93.6%; the two GPT-distilled students are attributed to GPT although they are built on different base models (Qwen3-8B and Llama-3.1-8B). <i>None</i> is the share of texts that no source condition explains better than the frozen backbone, which rises to 68.2% and 74.6% for two comparison models with no reported distillation from these families.</figcaption>
+    </figure>
+
+    <h3>Model resemblance of deployed models</h3>
+    <p>
+        We also apply the same attributor to recently deployed models for which no teacher, or even the use of distillation, is publicly established.
+        For each model, we report the share of its texts attributed to each family.
+        Besides the seven models in the paper's figure (DeepSeek, GLM, MiniMax, and Kimi), we add five more deployed models: Grok-4.7, A.X-K2, K-EXAONE-2.0, Motif-3, and Solar-Open2, all of which are most attributed to GPT.
+    </p>
+  </div>
+  <div class="article">
+    <figure>
+      <img src="static/figures/resemblance.svg" alt="Stacked bars of the share of texts attributed to GPT, Claude, and Gemini for twelve deployed models">
+    </figure>
+  </div>
+  <div class="article">
+    <p class="table-note" style="margin-top:-18px"><b>Resemblance of deployed models.</b> Share of each model's texts attributed to each candidate family (%); segments under 12% are left unlabeled.</p>
+    <div class="results-table narrow-table">
+      <table>
+        <thead>
+          <tr><th>Model</th><th>GPT</th><th>Claude</th><th>Gemini</th><th>Reject</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="group" colspan="5">In the paper's figure</td></tr>
+          <tr><td>DeepSeek-V4-Pro</td><td class="best">90.6</td><td>9.3</td><td>0.1</td><td>0.1</td></tr>
+          <tr><td>DeepSeek-V3.2</td><td class="best">41.5</td><td>27.8</td><td>30.6</td><td>0.4</td></tr>
+          <tr><td>GLM-5.2</td><td>15.2</td><td class="best">84.7</td><td>0.1</td><td>0.0</td></tr>
+          <tr><td>GLM-5.1</td><td>31.5</td><td class="best">63.6</td><td>4.9</td><td>0.2</td></tr>
+          <tr><td>MiniMax-M3</td><td class="best">56.4</td><td>43.6</td><td>0.1</td><td>0.2</td></tr>
+          <tr><td>MiniMax-M2.7-Turbo</td><td>6.2</td><td class="best">93.8</td><td>0.0</td><td>0.1</td></tr>
+          <tr><td>Kimi-K2.6</td><td>14.8</td><td class="best">85.2</td><td>0.0</td><td>0.1</td></tr>
+          <tr><td class="group" colspan="5">Additional deployed models</td></tr>
+          <tr><td>Grok-4.7</td><td class="best">92.2</td><td>7.8</td><td>0.1</td><td>0.2</td></tr>
+          <tr><td>A.X-K2</td><td class="best">62.6</td><td>37.2</td><td>0.2</td><td>0.2</td></tr>
+          <tr><td>K-EXAONE-2.0</td><td class="best">72.6</td><td>26.1</td><td>1.4</td><td>1.5</td></tr>
+          <tr><td>Motif-3</td><td class="best">71.8</td><td>27.3</td><td>0.9</td><td>0.8</td></tr>
+          <tr><td>Solar-Open2</td><td class="best">59.2</td><td>40.0</td><td>0.8</td><td>1.0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">Share of texts (%) attributed to each family; the most attributed family is highlighted. <i>Reject</i> is the share of texts that no source condition explains better than the frozen backbone.</p>
+
+    <h2 id="bibtex">BibTeX</h2>
+<!-- TODO: update the key, eprint, and URL once the arXiv ID is assigned -->
+<pre>@article{ko2026atlas,
+  title   = {Who's Behind the Text? Robust Model Authorship Attribution},
+  author  = {Ko, Minseok and Kim, Kunwoong and Lee, Hyunseok and Song, Woomin and Kim, Beomjun and Shin, Jinwoo},
+  journal = {arXiv preprint arXiv:XXXX.XXXXX},
+  year    = {2026}
+}</pre>
+  </div>
+</main>
+
+<footer>
+  Page design adapted from the <a href="https://hyunseoklee-ai.github.io/ReMoDetect/">ReMoDetect</a> project page and the <a href="https://yonghdong.github.io/blog/sqam/">SQAM</a> blog post.
+</footer>
+
+<script>
+(function () {
+  var bar = document.getElementById('progress');
+  function update() {
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    bar.value = max > 0 ? h.scrollTop / max : 0;
+  }
+  document.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+</script>
+</body>
+</html>
