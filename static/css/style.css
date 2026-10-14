@@ -85,6 +85,7 @@ a { color: var(--accent); }
   color: var(--muted); margin: 0 0 6px;
 }
 .d-byline .authors span { display: inline-block; margin-right: 14px; white-space: nowrap; }
+.d-byline .author-note { margin-top: 6px; font-size: 0.8rem; color: var(--muted); }
 
 .paper-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 0 0 32px; }
 .link-btn {
