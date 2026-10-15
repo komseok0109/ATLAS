@@ -122,3 +122,14 @@ Then run the same three stages from `scripts/atlas/maabench/human/` (or
 `scripts/atlas/openturing/human/`). In this setting `results.json` reports accuracy over all
 rows, human included (`(all)`), alongside the machine-only `(inter-LLM)` accuracy. Use a
 different run name from your main runs.
+
+## Citation
+
+```bibtex
+@article{ko2026atlas,
+  title   = {Who's Behind the Text? Robust Model Authorship Attribution},
+  author  = {Minseok Ko and Hyunseok Lee and Woomin Song and Beomjun Kim and Jinwoo Shin and Kunwoong Kim},
+  journal = {arXiv preprint arXiv:2610.19583},
+  year    = {2026}
+}
+```
